@@ -11,7 +11,7 @@ import {
 import { parseInput, bufferToPrettyHex } from "./hexUtils";
 import "./App.css";
 import ProtobufDisplay from "./ProtobufDisplay";
-import { decodeProto } from "./protobufDecoder";
+import { decodeProto, decodeProtoJson } from "./protobufDecoder";
 
 function App() {
   const [hex, setHex] = useState("");
@@ -43,7 +43,7 @@ function App() {
   const result = hexBuffer ? (
     <Fragment>
       <Header as="h2">Result</Header>
-      <ProtobufDisplay value={decodeProto(hexBuffer, parseDelimited)} />
+      <ProtobufDisplay value={decodeProtoJson(hexBuffer, parseDelimited)} />
     </Fragment>
   ) : null;
 

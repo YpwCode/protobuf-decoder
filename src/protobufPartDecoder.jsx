@@ -50,10 +50,10 @@ export function decodeVarintParts(value) {
     }
   }
 
-  const signedIntVal = interpretAsSignedType(uintVal);
-  if (signedIntVal !== uintVal) {
-    result.push({ type: "sint", value: signedIntVal.toString() });
-  }
+  // const signedIntVal = interpretAsSignedType(uintVal);
+  // if (signedIntVal !== uintVal) {
+  //   result.push({ type: "sint", value: signedIntVal.toString() });
+  // }
 
   return result;
 }

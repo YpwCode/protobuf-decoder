@@ -15,7 +15,8 @@ function ProtobufVarintPart(props) {
 
   return decoded.map((d, i) => (
     <span key={i}>
-      As {d.type}: {d.value}
+      {/* As {d.type}: {d.value} */}
+      {d.value}
       <br />
     </span>
   ));
@@ -82,7 +83,7 @@ function ProtobufPart(props) {
 
   return (
     <Table.Row>
-      <Table.Cell>{part.byteRange.join("-")}</Table.Cell>
+      {/* <Table.Cell>{part.byteRange.join("-")}</Table.Cell> */}
       <Table.Cell>{part.index}</Table.Cell>
       <Table.Cell>{stringType}</Table.Cell>
       <Table.Cell>{contents}</Table.Cell>

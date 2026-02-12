@@ -71,6 +71,9 @@ export const TYPES = {
 };
 
 export function decodeProto(buffer, parseDelimited) {
+  let j = decodeProtoJson(buffer);
+  console.log(j.json);
+
   const reader = new BufferReader(buffer);
   const parts = [];
 
@@ -117,7 +120,7 @@ export function decodeProto(buffer, parseDelimited) {
       byteRange.push(reader.offset);
 
       parts.push({
-        byteRange,
+        // byteRange,
         index,
         type,
         value
@@ -127,11 +130,74 @@ export function decodeProto(buffer, parseDelimited) {
     console.log(err);
     reader.resetToCheckpoint();
   }
-
   return {
     parts,
     leftOver: reader.readBuffer(reader.leftBytes())
   };
+}
+
+export function decodeProtoJson(buffer) {
+  const reader = new BufferReader(buffer);
+  const json = {};
+
+  reader.trySkipGrpcHeader();
+
+  try {
+    while (reader.leftBytes() > 0) {
+      reader.checkpoint();
+      
+      const indexType = parseInt(reader.readVarInt().toString());
+      const type = indexType & 0b111;
+      const index = indexType >> 3;
+
+      let value;
+      if (type === TYPES.VARINT) {
+        value = reader.readVarInt().toString();
+      } else if (type === TYPES.LENDELIM) {
+        const length = parseInt(reader.readVarInt().toString());
+        if (length > 0) {
+          const buf = reader.readBuffer(length);
+          const result = decodeProtoJson(buf);
+          if(result.leftOver.length === 0) {
+            value = result.json
+          } else {
+            value = decodeStringOrBytes(buf)
+          }
+        } else {
+          value = ""
+        }
+      } else if (type === TYPES.FIXED32) {
+        value = reader.readBuffer(4);
+      } else if (type === TYPES.FIXED64) {
+        value = reader.readBuffer(8);
+      } else {
+        throw new Error("Unknown type: " + type);
+        // value = "Unknown type: " + type
+      }
+
+      json[index] = value;
+    }
+  } catch (err) {
+    console.log(err);
+    reader.resetToCheckpoint();
+  }
+
+  return {
+    json,
+    leftOver: reader.readBuffer(reader.leftBytes())
+  };
+}
+
+export function decodeStringOrBytes(value) {
+  if (!value.length) {
+    return "";
+  }
+  const td = new TextDecoder("utf-8", { fatal: true });
+  try {
+    return td.decode(value);
+  } catch (e) {
+    return bufferToPrettyHex(value);
+  }
 }
 
 export function typeToString(type, subType) {
